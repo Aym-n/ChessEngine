@@ -1,9 +1,18 @@
+extern crate sdl2;
+
+use sdl2::event::Event;
+use sdl2::keyboard::Keycode;
+use sdl2::pixels::Color;
+use sdl2::rect::Rect;
+use sdl2::render::{Canvas, Texture};
+
+
 #[derive(Copy , Clone)]
 struct Piece {
     ptype: PieceType,
-    pcolor: Color,
+    pColor: pColor,
 }
-
+ 
 #[derive(Copy , Clone, Debug)]
 enum PieceType{
     Pawn,
@@ -13,8 +22,9 @@ enum PieceType{
     Queen,
     King,
 }
+
 #[derive(Copy , Clone)]
-enum Color{
+enum pColor{
     White,
     Black,
 } 
@@ -36,9 +46,9 @@ fn print_board(board: &Board) {
                         PieceType::Queen => "♕",
                         PieceType::King => "♔",
                     };
-                    let color_symbol = match piece.pcolor {
-                        Color::White => "W",
-                        Color::Black => "B",
+                    let color_symbol = match piece.pColor {
+                        pColor::White => "W",
+                        pColor::Black => "B",
                     };
                     print!("{}{} ", piece_symbol, color_symbol);
                 }
@@ -60,86 +70,163 @@ impl Board{
         // Set up the white pieces (top of the board)
         board.squares[0][0] = Some(Piece {
             ptype: PieceType::Rook,
-            pcolor: Color::White,
+            pColor: pColor::White,
         });
         board.squares[0][1] = Some(Piece {
             ptype: PieceType::Knight,
-            pcolor: Color::White,
+            pColor: pColor::White,
         });
         board.squares[0][2] = Some(Piece {
             ptype: PieceType::Bishop,
-            pcolor: Color::White,
+            pColor: pColor::White,
         });
         board.squares[0][3] = Some(Piece {
             ptype: PieceType::Queen,
-            pcolor: Color::White,
+            pColor: pColor::White,
         });
         board.squares[0][4] = Some(Piece {
             ptype: PieceType::King,
-            pcolor: Color::White,
+            pColor: pColor::White,
         });
         board.squares[0][5] = Some(Piece {
             ptype: PieceType::Bishop,
-            pcolor: Color::White,
+            pColor: pColor::White,
         });
         board.squares[0][6] = Some(Piece {
             ptype: PieceType::Knight,
-            pcolor: Color::White,
+            pColor: pColor::White,
         });
         board.squares[0][7] = Some(Piece {
             ptype: PieceType::Rook,
-            pcolor: Color::White,
+            pColor: pColor::White,
         });
-    
-        for i in 0..8 {
-            board.squares[1][i] = Some(Piece {
-                ptype: PieceType::Pawn,
-                pcolor: Color::White,
-            });
-        }
     
         // Set up the black pieces (bottom of the board)
         board.squares[7][0] = Some(Piece {
             ptype: PieceType::Rook,
-            pcolor: Color::Black,
+            pColor: pColor::Black,
         });
         board.squares[7][1] = Some(Piece {
             ptype: PieceType::Knight,
-            pcolor: Color::Black,
+            pColor: pColor::Black,
         });
         board.squares[7][2] = Some(Piece {
             ptype: PieceType::Bishop,
-            pcolor: Color::Black,
+            pColor: pColor::Black,
         });
         board.squares[7][3] = Some(Piece {
             ptype: PieceType::Queen,
-            pcolor: Color::Black,
+            pColor: pColor::Black,
         });
         board.squares[7][4] = Some(Piece {
             ptype: PieceType::King,
-            pcolor: Color::Black,
+            pColor: pColor::Black,
         });
         board.squares[7][5] = Some(Piece {
             ptype: PieceType::Bishop,
-            pcolor: Color::Black,
+            pColor: pColor::Black,
         });
         board.squares[7][6] = Some(Piece {
             ptype: PieceType::Knight,
-            pcolor: Color::Black,
+            pColor: pColor::Black,
         });
+
         board.squares[7][7] = Some(Piece {
             ptype: PieceType::Rook,
-            pcolor: Color::Black,
+            pColor: pColor::Black,
         });
     
         for i in 0..8 {
             board.squares[6][i] = Some(Piece {
                 ptype: PieceType::Pawn,
-                pcolor: Color::Black,
+                pColor: pColor::Black,
             });
+
+            board.squares[1][i] = Some(Piece {
+                ptype: PieceType::Pawn,
+                pColor: pColor::White,
+            });
+
         }
         board
     }
+
+    fn display(&self){
+
+        let sdl_context = sdl2::init().unwrap();
+        let video_subsystem = sdl_context.video().unwrap();
+    
+        let window = video_subsystem
+            .window("Chess", 800, 800)
+            .position_centered()
+            .build()
+            .unwrap();
+    
+        let mut canvas = window.into_canvas().build().unwrap();
+    
+        canvas.set_draw_color(Color::RGB(255, 255, 255));
+        canvas.clear();
+        canvas.present();
+    
+        let mut event_pump = sdl_context.event_pump().unwrap();
+    
+        'running: loop {
+            for event in event_pump.poll_iter() {
+                match event {
+                    Event::Quit { .. } => break 'running,
+                    Event::KeyDown {
+                        keycode: Some(Keycode::Escape),
+                        ..
+                    } => break 'running,
+                    _ => {}
+                }
+            }
+
+            const SQUARE_SIZE: u32 = 100;
+            const BOARD_SIZE: u32 = 8;
+
+            // Inside your main loop
+            for rank in 0..BOARD_SIZE{
+                for file in 0..BOARD_SIZE{
+                    let x = file * SQUARE_SIZE;
+                    let y = (BOARD_SIZE - rank - 1) * SQUARE_SIZE;
+
+                    let square = sdl2::rect::Rect::new(x as i32, y as i32, SQUARE_SIZE, SQUARE_SIZE);
+
+                    let color = if (rank + file) % 2 == 0 {
+                        sdl2::pixels::Color::RGB(125, 135, 150) // Light square
+                    } else {
+                        sdl2::pixels::Color::RGB(233, 236, 239) // Dark square
+                    };
+
+
+                    canvas.set_draw_color(color);
+                    canvas.fill_rect(square).unwrap();
+
+                    if let Some(piece) = self.squares[rank as usize][file as usize] {
+                        let piece_color = match piece.pColor {
+                            pColor::White => sdl2::pixels::Color::RGB(255, 255, 255), // White
+                            pColor::Black => sdl2::pixels::Color::RGB(0, 0, 0), // Black
+                        };
+            
+                        // For simplicity, we'll just draw a small square to represent the piece
+                        let piece_rect = sdl2::rect::Rect::new(
+                            (x + SQUARE_SIZE / 4) as i32,
+                            (y + SQUARE_SIZE / 4) as i32,
+                            SQUARE_SIZE / 2,
+                            SQUARE_SIZE / 2,
+                        );
+            
+                        canvas.set_draw_color(piece_color);
+                        canvas.fill_rect(piece_rect).unwrap();
+                    }
+                }
+            }
+    
+            canvas.present();
+        }
+    }
+
 }
 
 
@@ -148,4 +235,7 @@ fn main() {
     let board = Board::new();
 
     print_board(&board);
+
+    board.display();
+
 }
