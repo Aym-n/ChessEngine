@@ -2,6 +2,7 @@ extern crate sdl2;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
+use sdl2::libc::EV_CNT;
 use sdl2::pixels::Color;
 use sdl2::rect::Rect;
 use sdl2::render::{Canvas, Texture};
@@ -185,7 +186,7 @@ impl Board{
             const SQUARE_SIZE: u32 = 100;
             const BOARD_SIZE: u32 = 8;
 
-            // Inside your main loop
+            // loop to iterate through the 2d array
             for rank in 0..BOARD_SIZE{
                 for file in 0..BOARD_SIZE{
                     let x = file * SQUARE_SIZE;
@@ -209,7 +210,7 @@ impl Board{
                             pColor::Black => sdl2::pixels::Color::RGB(0, 0, 0), // Black
                         };
             
-                        // For simplicity, we'll just draw a small square to represent the piece
+                        // Using Squares to represent pieces 
                         let piece_rect = sdl2::rect::Rect::new(
                             (x + SQUARE_SIZE / 4) as i32,
                             (y + SQUARE_SIZE / 4) as i32,
@@ -233,8 +234,6 @@ impl Board{
 fn main() {
 
     let board = Board::new();
-
-    print_board(&board);
 
     board.display();
 
