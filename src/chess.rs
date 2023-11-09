@@ -82,7 +82,7 @@ fn move_generation(board: &Board) -> Vec<(usize, usize)>{
                             moves.push((new_rank as usize, file));
                         }
                         // Move forward two squares
-                        if rank == 1 || rank == 6 {
+                        if (rank == 1 && direction == 1) || (rank == 6 && direction == -1) {
                             let new_rank = rank as i32 + 2 * direction;
                             if board.squares[new_rank as usize][file].is_none() && board.squares[(new_rank - direction) as usize][file].is_none() {
                                 moves.push((new_rank as usize, file));
